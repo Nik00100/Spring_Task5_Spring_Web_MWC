@@ -36,14 +36,18 @@ public class PostRepository {
       if (item.getKey().equals(id)) {
         if (!item.getValue().isRemoved()) {
           return Optional.of(item.getValue());
+        } else {
+          throw new NotFoundException("Элемент удален");
         }
+      } else {
+        throw new NotFoundException("Элемент не найден");
       }
     }
     return Optional.empty();
   }
 
   public Post save(Post post) {
-    if (post.getId() == 0) {
+    if (post.getId() == 0 && !post.isRemoved()) {
       for (Map.Entry<Long, Post> item : listPostsMap.entrySet()) {
         if ((counter.get() + 1) == item.getKey()) {
           counter.incrementAndGet();
@@ -64,6 +68,7 @@ public class PostRepository {
 
   public void removeById(long id) {
     if (listPostsMap.containsKey(id)) {
+      if (listPostsMap.get(id).isRemoved()) throw new NotFoundException("Элемент не найден");
       listPostsMap.get(id).setRemoved(true);
       if (counter.get() > id) {
         counter.set(id - 1);
